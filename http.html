@@ -3,894 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>兼职工时与收入面板</title>
+  <title>今日工时</title>
   <style>
-    :root {
-      --bg: #f5f7fb;
-      --card: rgba(255,255,255,0.78);
-      --text: #111827;
-      --muted: #6b7280;
-      --line: rgba(17, 24, 39, 0.08);
-      --shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
-      --radius: 24px;
-    }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: radial-gradient(circle at top left, rgba(255,255,255,0.96), rgba(245,247,251,0.86) 40%), linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
-      color: var(--text);
       min-height: 100vh;
-    }
-    .wrap {
-      width: min(1180px, calc(100vw - 28px));
-      margin: 18px auto;
-      display: grid;
-      grid-template-columns: 360px 1fr;
-      gap: 20px;
-    }
-    .panel, .card {
-      background: var(--card);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.65);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-    .panel { padding: 22px; }
-    .sidebar { position: sticky; top: 16px; height: fit-content; }
-    .title { font-size: 28px; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.03em; }
-    .desc { color: var(--muted); font-size: 14px; line-height: 1.7; margin: 0 0 18px; }
-    .group {
-      margin-bottom: 16px;
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.68);
-      border: 1px solid var(--line);
-    }
-    .group h3 { margin: 0 0 12px; font-size: 14px; color: #374151; }
-    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-    .field:last-child { margin-bottom: 0; }
-    label { font-size: 12px; color: var(--muted); }
-    input, button {
-      border: 1px solid var(--line);
-      outline: none;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.96);
-      color: var(--text);
-      font-size: 14px;
-      transition: all .22s ease;
-    }
-    input { padding: 12px 14px; }
-    input:focus {
-      border-color: rgba(17,24,39,0.18);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 22px rgba(15,23,42,0.06);
-    }
-    .weekend {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
-    }
-    .weekend label {
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 40px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.96);
-      border: 1px solid var(--line);
-      color: #374151;
-      cursor: pointer;
-      font-size: 13px;
-      user-select: none;
+      background: #f7f7f7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #111;
     }
-    .weekend input { display: none; }
-    .weekend label.checked { background: #111827; color: #fff; border-color: #111827; }
-    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    button { padding: 12px 14px; cursor: pointer; font-weight: 700; }
-    button:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(15,23,42,0.08); }
-    .primary { background: #111827; color: #fff; border-color: #111827; }
-    .secondary { background: rgba(255,255,255,0.96); }
-    .main { display: grid; gap: 20px; }
-    .hero {
-      padding: 24px;
-      display: grid;
-      grid-template-columns: 1.35fr 1fr;
-      gap: 18px;
-      align-items: stretch;
+    .card {
+      width: min(92vw, 420px);
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      text-align: center;
     }
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: #4b5563;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.72);
-      border: 1px solid var(--line);
-      margin-bottom: 14px;
-    }
-    .big { font-size: clamp(34px, 5vw, 62px); line-height: 1; font-weight: 800; letter-spacing: -0.05em; margin: 0 0 12px; }
-    .subbig { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; }
-    .kv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-    .mini {
-      background: rgba(255,255,255,0.72);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 16px;
-    }
-    .mini .k { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-    .mini .v { font-size: 28px; font-weight: 800; letter-spacing: -0.04em; }
-    .hero-right {
-      background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.7));
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .clock { font-size: 14px; color: var(--muted); }
-    .money-now { font-size: clamp(34px, 4vw, 54px); font-weight: 800; letter-spacing: -0.05em; margin: 6px 0 0; }
-    .timeline { height: 12px; background: rgba(17,24,39,0.06); border-radius: 999px; overflow: hidden; }
-    .timeline-bar {
-      height: 100%;
-      width: 0%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, #111827, #6b7280);
-      transition: width .65s cubic-bezier(.22,1,.36,1);
-    }
-    .timeline-text { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
-    .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
-    .card { padding: 20px; }
-    .card .k { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
-    .card .v { font-size: 28px; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 8px; }
-    .card .s { font-size: 12px; color: #9ca3af; line-height: 1.6; }
-    .chart-card { padding: 22px; }
-    .chart-top { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin-bottom: 18px; }
-    .chart-title { margin: 0; font-size: 20px; font-weight: 800; }
-    .chart-sub { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
-    .date-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 10px; }
-    .date-cell {
-      min-height: 58px;
-      border-radius: 16px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.92);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      position: relative;
+    .label {
       font-size: 14px;
-      user-select: none;
-      transition: all .18s ease;
+      color: #666;
+      margin-bottom: 10px;
     }
-    .date-cell:hover { transform: translateY(-1px); }
-    .date-cell.active { background: #111827; color: #fff; border-color: #111827; }
-    .date-cell.muted { opacity: .5; }
-    .date-cell.selected { box-shadow: 0 0 0 2px rgba(17,24,39,0.16); }
-    .date-cell em {
-      position: absolute;
-      right: 6px;
-      top: 6px;
-      font-style: normal;
-      font-size: 10px;
-      opacity: .7;
-    }
-    .date-cell strong {
-      position: absolute;
-      left: 6px;
-      top: 6px;
-      font-size: 10px;
+    .hours {
+      font-size: 44px;
       font-weight: 700;
-      opacity: .8;
+      line-height: 1.1;
+      margin: 0;
     }
-    .day-editor {
-      background: rgba(255,255,255,0.72);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 16px;
+    .money {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 18px 0 0;
     }
-    .day-editor-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(17,24,39,0.06);
-      color: #374151;
-      font-size: 12px;
-    }
-    .tiny { font-size: 12px; color: #9ca3af; }
-    .editor-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
-    .bars { height: 260px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(10px, 1fr); align-items: end; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
-    .bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .bar {
-      width: 100%;
-      min-height: 4px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, #111827, #9ca3af);
-      opacity: 0.92;
-      transform-origin: bottom;
-      animation: rise .55s ease both;
-    }
-    .bar.off { background: rgba(17,24,39,0.12); }
-    .bar.today { box-shadow: 0 10px 20px rgba(17,24,39,0.16); }
-    .day { font-size: 11px; color: #9ca3af; }
-    .legend { display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); font-size: 12px; margin-top: 16px; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: -1px; }
-    .footer-note { text-align: center; color: #9ca3af; font-size: 12px; padding-bottom: 10px; }
-    @keyframes rise { from { transform: scaleY(.2); opacity: .3; } to { transform: scaleY(1); opacity: .92; } }
-    @media (max-width: 1080px) {
-      .wrap { grid-template-columns: 1fr; }
-      .sidebar { position: static; }
-      .hero { grid-template-columns: 1fr; }
-      .cards { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 640px) {
-      .wrap { width: min(100vw - 18px, 1180px); margin: 10px auto 20px; }
-      .cards, .grid2, .grid3, .kv, .actions, .editor-actions { grid-template-columns: 1fr; }
-      .weekend { grid-template-columns: repeat(4, 1fr); }
-      .cards { grid-template-columns: 1fr; }
+    .sub {
+      margin-top: 14px;
+      font-size: 13px;
+      color: #888;
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <aside class="panel sidebar">
-      <h1 class="title">兼职工时与收入面板</h1>
-      <p class="desc">适合兼职。你可以设置结算周期、默认上下班时间、午休、时薪，并手动勾选实际上班日期。还可以对某一天单独改上下班时间。</p>
-
-      <div class="group">
-        <h3>基础参数</h3>
-        <div class="field">
-          <label for="rate">时薪（¥ / 小时）</label>
-          <input id="rate" type="number" min="0" step="0.01" />
-        </div>
-        <div class="grid2">
-          <div class="field">
-            <label for="workStart">默认上班时间</label>
-            <input id="workStart" type="time" />
-          </div>
-          <div class="field">
-            <label for="workEnd">默认下班时间</label>
-            <input id="workEnd" type="time" />
-          </div>
-        </div>
-      </div>
-
-      <div class="group">
-        <h3>午休参数</h3>
-        <div class="grid2">
-          <div class="field">
-            <label for="breakStart">午休开始</label>
-            <input id="breakStart" type="time" />
-          </div>
-          <div class="field">
-            <label for="breakEnd">午休结束</label>
-            <input id="breakEnd" type="time" />
-          </div>
-        </div>
-      </div>
-
-      <div class="group">
-        <h3>结算周期</h3>
-        <div class="grid2">
-          <div class="field">
-            <label for="periodStart">开始日期</label>
-            <input id="periodStart" type="date" />
-          </div>
-          <div class="field">
-            <label for="periodEnd">结束日期</label>
-            <input id="periodEnd" type="date" />
-          </div>
-        </div>
-      </div>
-
-      <div class="group">
-        <h3>默认休息日</h3>
-        <div class="weekend" id="weekendBox"></div>
-      </div>
-
-      <div class="actions">
-        <button class="primary" id="saveBtn">保存设置</button>
-        <button class="secondary" id="resetBtn">恢复默认</button>
-      </div>
-    </aside>
-
-    <main class="main">
-      <section class="hero panel">
-        <div>
-          <div class="eyebrow">按操作更新</div>
-          <h2 class="big" id="todayHours">0.00 小时</h2>
-          <div class="subbig">支持给某一天单独设置上下班时间。未单独设置的日期，自动使用左侧默认时间。</div>
-          <div class="kv">
-            <div class="mini">
-              <div class="k">今日收入</div>
-              <div class="v" id="todayMoney">¥0.00</div>
-            </div>
-            <div class="mini">
-              <div class="k">今日进度</div>
-              <div class="v" id="todayProgress">0%</div>
-            </div>
-          </div>
-        </div>
-        <div class="hero-right">
-          <div>
-            <div class="clock" id="nowText">--</div>
-            <div class="money-now" id="periodMoneyBig">¥0.00</div>
-            <div class="subbig" style="margin:10px 0 0; font-size:14px;">当前周期累计收入</div>
-          </div>
-          <div>
-            <div class="timeline">
-              <div class="timeline-bar" id="timelineBar"></div>
-            </div>
-            <div class="timeline-text">
-              <span>今日工作进度</span>
-              <span id="timelineLabel">0%</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="cards">
-        <div class="card">
-          <div class="k">当前周期收入</div>
-          <div class="v" id="periodMoney">¥0.00</div>
-          <div class="s">只统计你在当前周期内勾选的上班日期</div>
-        </div>
-        <div class="card">
-          <div class="k">当前周期总工时</div>
-          <div class="v" id="periodHours">0.00</div>
-          <div class="s">单位：小时</div>
-        </div>
-        <div class="card">
-          <div class="k">已选上班天数</div>
-          <div class="v" id="periodDays">0</div>
-          <div class="s">未来已勾选日期暂不计入已完成收入</div>
-        </div>
-        <div class="card">
-          <div class="k">上班日均收入</div>
-          <div class="v" id="avgMoney">¥0.00</div>
-          <div class="s">按已发生且已勾选的上班日平均</div>
-        </div>
-        <div class="card">
-          <div class="k">标准单日工时</div>
-          <div class="v" id="dailyStandard">0.00</div>
-          <div class="s">按默认时间计算</div>
-        </div>
-      </section>
-
-      <section class="panel chart-card">
-        <div class="chart-top">
-          <div>
-            <h3 class="chart-title">实际上班日选择</h3>
-            <p class="chart-sub">点击日期切换是否上班，再点一次日期可在下方编辑这一天的上下班时间。</p>
-          </div>
-        </div>
-        <div class="date-grid" id="datePickerGrid"></div>
-      </section>
-
-      <section class="panel chart-card">
-        <div class="chart-top">
-          <div>
-            <h3 class="chart-title">单日上下班设置</h3>
-            <p class="chart-sub">当前选中日期可单独设置。留空或恢复默认后，会重新使用左侧默认上下班时间。</p>
-          </div>
-        </div>
-        <div class="day-editor">
-          <div class="day-editor-head">
-            <div>
-              <div class="tag" id="selectedDateText">未选择日期</div>
-            </div>
-            <div class="tiny" id="selectedDateHint">先点击上方某个日期</div>
-          </div>
-          <div class="grid3">
-            <div class="field">
-              <label for="dayWorkStart">该日上班时间</label>
-              <input id="dayWorkStart" type="time" />
-            </div>
-            <div class="field">
-              <label for="dayWorkEnd">该日下班时间</label>
-              <input id="dayWorkEnd" type="time" />
-            </div>
-            <div class="field">
-              <label for="dayPreview">该日预计工时</label>
-              <input id="dayPreview" type="text" readonly />
-            </div>
-          </div>
-          <div class="editor-actions">
-            <button class="primary" id="applyDayBtn">保存该日时间</button>
-            <button class="secondary" id="clearDayBtn">恢复该日默认</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel chart-card">
-        <div class="chart-top">
-          <div>
-            <h3 class="chart-title">当前周期每日收入</h3>
-            <p class="chart-sub">未勾选日期、未来日期都会显示为低亮度；设置了单日时间的日期左上角会显示“自”。</p>
-          </div>
-        </div>
-        <div class="bars" id="bars"></div>
-        <div class="legend">
-          <span><span class="dot" style="background:#111827"></span>已选上班日</span>
-          <span><span class="dot" style="background:rgba(17,24,39,0.12)"></span>未选 / 未来</span>
-          <span><span class="dot" style="background:#6b7280"></span>今日</span>
-        </div>
-      </section>
-
-      <div class="footer-note">兼职工时统计页 · 结算周期可调 · 支持单独设置某一天的上下班时间</div>
-    </main>
+  <div class="card">
+    <div class="label">今日已工作</div>
+    <h1 class="hours" id="hours">0.00 小时</h1>
+    <div class="money" id="money">¥0.00</div>
+    <div class="sub">09:00 开始｜12:00–13:30 午休｜时薪 ¥15</div>
   </div>
 
   <script>
-    const STORAGE_KEY = 'part_time_dashboard_settings_v4';
-    const WEEK_NAMES = ['日', '一', '二', '三', '四', '五', '六'];
+    const HOURLY_RATE = 15;
 
-    function toDateString(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const d = String(date.getDate()).padStart(2, '0');
-      return `${y}-${m}-${d}`;
-    }
-    function addDays(dateStr, delta) {
-      const d = new Date(dateStr + 'T00:00:00');
-      d.setDate(d.getDate() + delta);
-      return toDateString(d);
-    }
-    const todayStr = toDateString(new Date());
-    const DEFAULTS = {
-      rate: 15,
-      workStart: '09:00',
-      workEnd: '18:00',
-      breakStart: '12:00',
-      breakEnd: '13:30',
-      periodStart: addDays(todayStr, -15),
-      periodEnd: addDays(todayStr, 15),
-      weekends: [0, 6],
-      activeDates: [todayStr],
-      dailyOverrides: {}
-    };
+    function getWorkedHours(now = new Date()) {
+      const start = new Date(now);
+      start.setHours(9, 0, 0, 0);
 
-    const el = {
-      rate: document.getElementById('rate'),
-      workStart: document.getElementById('workStart'),
-      workEnd: document.getElementById('workEnd'),
-      breakStart: document.getElementById('breakStart'),
-      breakEnd: document.getElementById('breakEnd'),
-      periodStart: document.getElementById('periodStart'),
-      periodEnd: document.getElementById('periodEnd'),
-      weekendBox: document.getElementById('weekendBox'),
-      saveBtn: document.getElementById('saveBtn'),
-      resetBtn: document.getElementById('resetBtn'),
-      datePickerGrid: document.getElementById('datePickerGrid'),
-      todayHours: document.getElementById('todayHours'),
-      todayMoney: document.getElementById('todayMoney'),
-      todayProgress: document.getElementById('todayProgress'),
-      nowText: document.getElementById('nowText'),
-      periodMoneyBig: document.getElementById('periodMoneyBig'),
-      periodMoney: document.getElementById('periodMoney'),
-      periodHours: document.getElementById('periodHours'),
-      periodDays: document.getElementById('periodDays'),
-      avgMoney: document.getElementById('avgMoney'),
-      dailyStandard: document.getElementById('dailyStandard'),
-      timelineBar: document.getElementById('timelineBar'),
-      timelineLabel: document.getElementById('timelineLabel'),
-      bars: document.getElementById('bars'),
-      selectedDateText: document.getElementById('selectedDateText'),
-      selectedDateHint: document.getElementById('selectedDateHint'),
-      dayWorkStart: document.getElementById('dayWorkStart'),
-      dayWorkEnd: document.getElementById('dayWorkEnd'),
-      dayPreview: document.getElementById('dayPreview'),
-      applyDayBtn: document.getElementById('applyDayBtn'),
-      clearDayBtn: document.getElementById('clearDayBtn')
-    };
+      const lunchStart = new Date(now);
+      lunchStart.setHours(12, 0, 0, 0);
 
-    const animated = new Map();
-    let selectedDate = null;
-    let currentSettings = loadSettings();
+      const lunchEnd = new Date(now);
+      lunchEnd.setHours(13, 30, 0, 0);
 
-    function loadSettings() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return JSON.parse(JSON.stringify(DEFAULTS));
-        const data = JSON.parse(raw);
-        return {
-          rate: Number(data.rate ?? DEFAULTS.rate),
-          workStart: data.workStart || DEFAULTS.workStart,
-          workEnd: data.workEnd || DEFAULTS.workEnd,
-          breakStart: data.breakStart || DEFAULTS.breakStart,
-          breakEnd: data.breakEnd || DEFAULTS.breakEnd,
-          periodStart: data.periodStart || DEFAULTS.periodStart,
-          periodEnd: data.periodEnd || DEFAULTS.periodEnd,
-          weekends: Array.isArray(data.weekends) ? data.weekends : [...DEFAULTS.weekends],
-          activeDates: Array.isArray(data.activeDates) ? data.activeDates : [...DEFAULTS.activeDates],
-          dailyOverrides: data.dailyOverrides && typeof data.dailyOverrides === 'object' ? data.dailyOverrides : {}
-        };
-      } catch {
-        return JSON.parse(JSON.stringify(DEFAULTS));
-      }
-    }
+      if (now <= start) return 0;
 
-    function saveSettings(cfg) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
-    }
+      let workedMs = now - start;
 
-    function timeToMinutes(t) {
-      const [h, m] = t.split(':').map(Number);
-      return h * 60 + m;
-    }
-
-    function formatMoney(v) { return `¥${v.toFixed(2)}`; }
-
-    function formatDateTime(now) {
-      return now.toLocaleString('zh-CN', {
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-      });
-    }
-
-    function isOffDay(date, cfg) {
-      return cfg.weekends.includes(date.getDay());
-    }
-
-    function getDateRange(startStr, endStr) {
-      const start = new Date(startStr + 'T00:00:00');
-      const end = new Date(endStr + 'T00:00:00');
-      if (start > end) return [];
-      const arr = [];
-      const cur = new Date(start);
-      while (cur <= end) {
-        arr.push(new Date(cur));
-        cur.setDate(cur.getDate() + 1);
-      }
-      return arr;
-    }
-
-    function getScheduleForDate(dateKey, cfg) {
-      const override = cfg.dailyOverrides?.[dateKey];
-      return {
-        workStart: override?.workStart || cfg.workStart,
-        workEnd: override?.workEnd || cfg.workEnd,
-        breakStart: cfg.breakStart,
-        breakEnd: cfg.breakEnd
-      };
-    }
-
-    function calcHoursBySchedule(workStart, workEnd, breakStart, breakEnd) {
-      if (!workStart || !workEnd) return 0;
-      const ws = timeToMinutes(workStart);
-      const we = timeToMinutes(workEnd);
-      const bs = timeToMinutes(breakStart);
-      const be = timeToMinutes(breakEnd);
-      const total = Math.max(0, we - ws);
-      const overlap = Math.max(0, Math.min(we, be) - Math.max(ws, bs));
-      return Math.max(0, (total - overlap) / 60);
-    }
-
-    function getDailyStandardHours(cfg) {
-      return calcHoursBySchedule(cfg.workStart, cfg.workEnd, cfg.breakStart, cfg.breakEnd);
-    }
-
-    function isActiveWorkDate(date, cfg) {
-      return (cfg.activeDates || []).includes(toDateString(date));
-    }
-
-    function workedMinutesAt(date, cfg) {
-      const key = toDateString(date);
-      if (key < cfg.periodStart || key > cfg.periodEnd) return 0;
-      if (!isActiveWorkDate(date, cfg)) return 0;
-
-      const schedule = getScheduleForDate(key, cfg);
-      const ws = timeToMinutes(schedule.workStart);
-      const we = timeToMinutes(schedule.workEnd);
-      const bs = timeToMinutes(schedule.breakStart);
-      const be = timeToMinutes(schedule.breakEnd);
-      const nowM = date.getHours() * 60 + date.getMinutes() + date.getSeconds() / 60;
-      if (nowM <= ws) return 0;
-
-      const clampedNow = Math.min(nowM, we);
-      let worked = Math.max(0, clampedNow - ws);
-      const overlap = Math.max(0, Math.min(clampedNow, be) - Math.max(ws, bs));
-      worked -= overlap;
-      return Math.max(0, worked);
-    }
-
-    function renderWeekendSelector(selected) {
-      el.weekendBox.innerHTML = '';
-      WEEK_NAMES.forEach((name, index) => {
-        const label = document.createElement('label');
-        if (selected.includes(index)) label.classList.add('checked');
-        label.innerHTML = `<input type="checkbox" value="${index}" ${selected.includes(index) ? 'checked' : ''}><span>周${name}</span>`;
-        label.querySelector('input').addEventListener('change', e => {
-          label.classList.toggle('checked', e.target.checked);
-        });
-        el.weekendBox.appendChild(label);
-      });
-    }
-
-    function fillForm(cfg) {
-      el.rate.value = cfg.rate;
-      el.workStart.value = cfg.workStart;
-      el.workEnd.value = cfg.workEnd;
-      el.breakStart.value = cfg.breakStart;
-      el.breakEnd.value = cfg.breakEnd;
-      el.periodStart.value = cfg.periodStart;
-      el.periodEnd.value = cfg.periodEnd;
-      renderWeekendSelector(cfg.weekends);
-    }
-
-    function getFormSettings() {
-      const weekends = [...el.weekendBox.querySelectorAll('input:checked')].map(i => Number(i.value)).sort((a, b) => a - b);
-      return {
-        rate: Math.max(0, Number(el.rate.value || 0)),
-        workStart: el.workStart.value || DEFAULTS.workStart,
-        workEnd: el.workEnd.value || DEFAULTS.workEnd,
-        breakStart: el.breakStart.value || DEFAULTS.breakStart,
-        breakEnd: el.breakEnd.value || DEFAULTS.breakEnd,
-        periodStart: el.periodStart.value || DEFAULTS.periodStart,
-        periodEnd: el.periodEnd.value || DEFAULTS.periodEnd,
-        weekends,
-        activeDates: [...(currentSettings.activeDates || [])],
-        dailyOverrides: { ...(currentSettings.dailyOverrides || {}) }
-      };
-    }
-
-    function refreshSelectedEditor() {
-      if (!selectedDate) {
-        el.selectedDateText.textContent = '未选择日期';
-        el.selectedDateHint.textContent = '先点击上方某个日期';
-        el.dayWorkStart.value = '';
-        el.dayWorkEnd.value = '';
-        el.dayPreview.value = '';
-        return;
-      }
-      const ov = currentSettings.dailyOverrides?.[selectedDate];
-      el.selectedDateText.textContent = selectedDate;
-      el.selectedDateHint.textContent = ov ? '当前日期已使用单独时间' : '当前日期使用默认时间';
-      el.dayWorkStart.value = ov?.workStart || currentSettings.workStart;
-      el.dayWorkEnd.value = ov?.workEnd || currentSettings.workEnd;
-      const hours = calcHoursBySchedule(el.dayWorkStart.value, el.dayWorkEnd.value, currentSettings.breakStart, currentSettings.breakEnd);
-      el.dayPreview.value = `${hours.toFixed(2)} 小时`;
-    }
-
-    function renderDatePicker(cfg) {
-      el.datePickerGrid.innerHTML = '';
-      const range = getDateRange(cfg.periodStart, cfg.periodEnd);
-      range.forEach(date => {
-        const key = toDateString(date);
-        const active = (cfg.activeDates || []).includes(key);
-        const off = isOffDay(date, cfg);
-        const hasOverride = !!cfg.dailyOverrides?.[key];
-        const cell = document.createElement('div');
-        cell.className = `date-cell${active ? ' active' : ''}${off ? ' muted' : ''}${selectedDate === key ? ' selected' : ''}`;
-        cell.innerHTML = `${hasOverride ? '<strong>自</strong>' : ''}<span>${date.getDate()}</span>${off ? '<em>休</em>' : ''}`;
-        cell.title = key;
-        cell.addEventListener('click', () => {
-          if (selectedDate === key) {
-            const set = new Set(currentSettings.activeDates || []);
-            if (set.has(key)) set.delete(key); else set.add(key);
-            currentSettings.activeDates = [...set].sort();
-          }
-          selectedDate = key;
-          saveSettings(currentSettings);
-          renderDatePicker(currentSettings);
-          refreshSelectedEditor();
-          updateView(currentSettings);
-        });
-        el.datePickerGrid.appendChild(cell);
-      });
-    }
-
-    function getPeriodStats(now, cfg) {
-      const range = getDateRange(cfg.periodStart, cfg.periodEnd);
-      const todayKey = toDateString(now);
-
-      let totalHours = 0;
-      let totalMoney = 0;
-      let workedDays = 0;
-      const daily = [];
-
-      for (const d0 of range) {
-        const key = toDateString(d0);
-        const active = isActiveWorkDate(d0, cfg);
-        const isFuture = key > todayKey;
-        const isToday = key === todayKey;
-        const schedule = getScheduleForDate(key, cfg);
-        const standardHoursForDay = calcHoursBySchedule(schedule.workStart, schedule.workEnd, schedule.breakStart, schedule.breakEnd);
-        let hours = 0;
-        let money = 0;
-
-        if (active && !isFuture) {
-          workedDays += 1;
-          if (isToday) {
-            hours = workedMinutesAt(now, cfg) / 60;
-            money = hours * cfg.rate;
-          } else {
-            hours = standardHoursForDay;
-            money = standardHoursForDay * cfg.rate;
-          }
-        }
-
-        totalHours += hours;
-        totalMoney += money;
-        daily.push({ key, day: d0.getDate(), active, isFuture, isToday, money, hours, hasOverride: !!cfg.dailyOverrides?.[key] });
+      if (now > lunchStart) {
+        const deductedUntil = now < lunchEnd ? now : lunchEnd;
+        workedMs -= deductedUntil - lunchStart;
       }
 
-      return {
-        totalHours,
-        totalMoney,
-        workedDays,
-        avgMoney: workedDays ? totalMoney / workedDays : 0,
-        standardHours: getDailyStandardHours(cfg),
-        daily
-      };
+      return Math.max(0, workedMs / 1000 / 60 / 60);
     }
 
-    function animateNumber(key, to, duration, render) {
-      const from = animated.has(key) ? animated.get(key) : to;
-      const start = performance.now();
-      const startVal = from;
-      const diff = to - startVal;
-      cancelAnimationFrame(animated.get(`${key}_raf`));
-      function frame(ts) {
-        const p = Math.min(1, (ts - start) / duration);
-        const eased = 1 - Math.pow(1 - p, 3);
-        const current = startVal + diff * eased;
-        animated.set(key, current);
-        render(current);
-        if (p < 1) animated.set(`${key}_raf`, requestAnimationFrame(frame));
-        else { animated.set(key, to); render(to); }
-      }
-      animated.set(`${key}_raf`, requestAnimationFrame(frame));
-    }
-
-    function renderBars(stats) {
-      el.bars.innerHTML = '';
-      const maxMoney = Math.max(...stats.daily.map(d => d.money), 1);
-      stats.daily.forEach(item => {
-        const wrap = document.createElement('div');
-        wrap.className = 'bar-wrap';
-        const bar = document.createElement('div');
-        const h = item.money <= 0 ? 4 : Math.max(8, item.money / maxMoney * 220);
-        bar.className = 'bar';
-        if (!item.active || item.isFuture) bar.classList.add('off');
-        if (item.isToday) bar.classList.add('today');
-        bar.style.height = `${h}px`;
-        bar.title = `${item.key}：${formatMoney(item.money)} / ${item.hours.toFixed(2)} 小时${item.hasOverride ? ' / 单独时间' : ''}`;
-        const day = document.createElement('div');
-        day.className = 'day';
-        day.textContent = item.day;
-        wrap.appendChild(bar);
-        wrap.appendChild(day);
-        el.bars.appendChild(wrap);
-      });
-    }
-
-    function updateView(cfg) {
+    function update() {
       const now = new Date();
-      const todayHours = workedMinutesAt(now, cfg) / 60;
-      const todayMoney = todayHours * cfg.rate;
-      const todaySchedule = getScheduleForDate(todayStr, cfg);
-      const todayStandard = calcHoursBySchedule(todaySchedule.workStart, todaySchedule.workEnd, todaySchedule.breakStart, todaySchedule.breakEnd);
-      const progress = todayStandard > 0 ? Math.min(100, todayHours / todayStandard * 100) : 0;
-      const stats = getPeriodStats(now, cfg);
+      const hours = getWorkedHours(now);
+      const pay = hours * HOURLY_RATE;
 
-      el.nowText.textContent = formatDateTime(now);
-      animateNumber('todayHours', todayHours, 500, v => el.todayHours.textContent = `${v.toFixed(2)} 小时`);
-      animateNumber('todayMoney', todayMoney, 500, v => el.todayMoney.textContent = formatMoney(v));
-      animateNumber('todayProgress', progress, 500, v => el.todayProgress.textContent = `${v.toFixed(0)}%`);
-      animateNumber('periodMoneyBig', stats.totalMoney, 620, v => el.periodMoneyBig.textContent = formatMoney(v));
-      animateNumber('periodMoney', stats.totalMoney, 620, v => el.periodMoney.textContent = formatMoney(v));
-      animateNumber('periodHours', stats.totalHours, 620, v => el.periodHours.textContent = v.toFixed(2));
-      animateNumber('periodDays', stats.workedDays, 620, v => el.periodDays.textContent = Math.round(v));
-      animateNumber('avgMoney', stats.avgMoney, 620, v => el.avgMoney.textContent = formatMoney(v));
-      animateNumber('dailyStandard', stats.standardHours, 620, v => el.dailyStandard.textContent = v.toFixed(2));
-      el.timelineBar.style.width = `${progress}%`;
-      el.timelineLabel.textContent = `${progress.toFixed(0)}%`;
-      renderBars(stats);
-      refreshSelectedEditor();
+      document.getElementById('hours').textContent = `${hours.toFixed(2)} 小时`;
+      document.getElementById('money').textContent = `¥${pay.toFixed(2)}`;
     }
 
-    fillForm(currentSettings);
-    renderDatePicker(currentSettings);
-    saveSettings(currentSettings);
-    updateView(currentSettings);
-
-    el.dayWorkStart.addEventListener('input', () => {
-      const hours = calcHoursBySchedule(el.dayWorkStart.value, el.dayWorkEnd.value, currentSettings.breakStart, currentSettings.breakEnd);
-      el.dayPreview.value = `${hours.toFixed(2)} 小时`;
-    });
-    el.dayWorkEnd.addEventListener('input', () => {
-      const hours = calcHoursBySchedule(el.dayWorkStart.value, el.dayWorkEnd.value, currentSettings.breakStart, currentSettings.breakEnd);
-      el.dayPreview.value = `${hours.toFixed(2)} 小时`;
-    });
-
-    el.applyDayBtn.addEventListener('click', () => {
-      if (!selectedDate) {
-        alert('请先选择一个日期');
-        return;
-      }
-      const ws = el.dayWorkStart.value;
-      const we = el.dayWorkEnd.value;
-      if (!ws || !we) {
-        alert('请先填写上班和下班时间');
-        return;
-      }
-      if (timeToMinutes(we) <= timeToMinutes(ws)) {
-        alert('下班时间必须晚于上班时间');
-        return;
-      }
-      if (!(currentSettings.activeDates || []).includes(selectedDate)) {
-        currentSettings.activeDates = [...new Set([...(currentSettings.activeDates || []), selectedDate])].sort();
-      }
-      currentSettings.dailyOverrides = currentSettings.dailyOverrides || {};
-      currentSettings.dailyOverrides[selectedDate] = { workStart: ws, workEnd: we };
-      saveSettings(currentSettings);
-      renderDatePicker(currentSettings);
-      updateView(currentSettings);
-      el.applyDayBtn.textContent = '已保存';
-      setTimeout(() => el.applyDayBtn.textContent = '保存该日时间', 1200);
-    });
-
-    el.clearDayBtn.addEventListener('click', () => {
-      if (!selectedDate) {
-        alert('请先选择一个日期');
-        return;
-      }
-      if (currentSettings.dailyOverrides?.[selectedDate]) {
-        delete currentSettings.dailyOverrides[selectedDate];
-      }
-      saveSettings(currentSettings);
-      renderDatePicker(currentSettings);
-      updateView(currentSettings);
-    });
-
-    el.saveBtn.addEventListener('click', () => {
-      const next = getFormSettings();
-      if (next.periodStart > next.periodEnd) {
-        alert('结束日期不能早于开始日期');
-        return;
-      }
-      next.activeDates = next.activeDates.filter(d => d >= next.periodStart && d <= next.periodEnd);
-      const cleanedOverrides = {};
-      Object.entries(next.dailyOverrides || {}).forEach(([k, v]) => {
-        if (k >= next.periodStart && k <= next.periodEnd) cleanedOverrides[k] = v;
-      });
-      next.dailyOverrides = cleanedOverrides;
-      currentSettings = next;
-      if (selectedDate && (selectedDate < currentSettings.periodStart || selectedDate > currentSettings.periodEnd)) {
-        selectedDate = null;
-      }
-      saveSettings(currentSettings);
-      renderDatePicker(currentSettings);
-      updateView(currentSettings);
-      el.saveBtn.textContent = '已保存';
-      setTimeout(() => el.saveBtn.textContent = '保存设置', 1200);
-    });
-
-    el.resetBtn.addEventListener('click', () => {
-      currentSettings = JSON.parse(JSON.stringify(DEFAULTS));
-      selectedDate = null;
-      fillForm(currentSettings);
-      renderDatePicker(currentSettings);
-      saveSettings(currentSettings);
-      updateView(currentSettings);
-    });
+    update();
+    setInterval(update, 1000);
   </script>
 </body>
 </html>
